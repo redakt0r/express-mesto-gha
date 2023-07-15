@@ -19,3 +19,19 @@ module.exports.getUserById = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
 };
+
+module.exports.updateUserInfo = (req, res) => {
+  const userId = req.user._id;
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+    .then((users) => res.send({ data: users }))
+    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  const userId = req.user._id;
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(userId, { avatar }, { new: true })
+    .then((users) => res.send({ data: users }))
+    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+};
