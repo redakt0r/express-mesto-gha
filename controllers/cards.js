@@ -1,10 +1,10 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (_req, res) => {
   Card.find({})
     .populate('likes')
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.postCard = (req, res) => {
@@ -12,13 +12,24 @@ module.exports.postCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Введены некорректные данные' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+    });
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findOneAndDelete()
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+  const { cardId } = req.params.cardId;
+  Card.findByIdAndDelete(cardId)
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else res.send({ data: card });
+    })
+    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.likeCard = (req, res) => {
@@ -28,8 +39,12 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .populate('likes')
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else res.send({ data: card });
+    })
+    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -39,6 +54,10 @@ module.exports.dislikeCard = (req, res) => {
     { new: true },
   )
     .populate('likes')
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else res.send({ data: card });
+    })
+    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
 };
