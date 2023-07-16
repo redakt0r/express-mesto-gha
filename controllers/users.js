@@ -12,7 +12,7 @@ module.exports.postUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
+        res.status(400).send({ message: err.message });
         return;
       }
       res.status(500).send({ message: 'Произошла неопознанная ошибка' });
@@ -20,14 +20,18 @@ module.exports.postUser = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
+  // const { userId } = req.params;
+  // console.log(userId);
+  User.findById(req.params.userId)
+    .orFail(new Error('NotValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
-      } else res.send({ data: user });
+      res.send({ data: user });
     })
-    .catch(() => {
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Пользователь не найден' });
+        return;
+      }
       res.status(500).send({ message: 'Произошла неопознанная ошибка' });
     });
 };
@@ -35,14 +39,14 @@ module.exports.getUserById = (req, res) => {
 module.exports.updateUserInfo = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
+        res.status(400).send({ message: err.message });
         return;
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      res.status(500).send({ message: err.message });
     });
 };
 

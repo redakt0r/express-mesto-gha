@@ -14,7 +14,7 @@ module.exports.postCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
+        res.status(400).send({ message: err.message });
         return;
       }
       res.status(500).send({ message: 'Произошла неопознанная ошибка' });
@@ -22,42 +22,55 @@ module.exports.postCard = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  const { cardId } = req.params.cardId;
-  Card.findByIdAndDelete(cardId)
+  // const { cardId } = req.params.cardId;
+  Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-      } else res.send({ data: card });
+        return res.status(404).send({ message: 'Карточка не найдена' });
+      }
+      return res.send({ data: card });
     })
     .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.likeCard = (req, res) => {
+  const { cardId } = req.params;
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('NotValidId'))
     .populate('likes')
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-      } else res.send({ data: card });
+      res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Карточка не найдена' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
+  const { cardId } = req.params;
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('NotValidId'))
     .populate('likes')
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-      } else res.send({ data: card });
+      res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Карточка не найдена' });
+        return;
+      }
+      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+    });
 };
