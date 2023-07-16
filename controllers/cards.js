@@ -22,7 +22,7 @@ module.exports.postCard = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  const { cardId } = req.params.cardId;
+  const { cardId } = req.params;
   Card.findByIdAndDelete(cardId)
     .orFail(new Error('NotValidId'))
     .then((card) => {
@@ -33,7 +33,7 @@ module.exports.deleteCardById = (req, res) => {
         return res.status(404).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(404).send({ message: 'Некорректный ID' });
+        return res.status(400).send({ message: 'Некорректный ID' });
       }
       return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
@@ -56,7 +56,7 @@ module.exports.likeCard = (req, res) => {
         return res.status(404).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(404).send({ message: 'Некорректный ID' });
+        return res.status(400).send({ message: 'Некорректный ID' });
       }
       return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
@@ -79,7 +79,7 @@ module.exports.dislikeCard = (req, res) => {
         return res.status(404).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(404).send({ message: 'Некорректный ID' });
+        return res.status(400).send({ message: 'Некорректный ID' });
       }
       return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });

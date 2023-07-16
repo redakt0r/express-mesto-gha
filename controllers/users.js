@@ -31,7 +31,7 @@ module.exports.getUserById = (req, res) => {
         return res.status(404).send({ message: 'Пользователь не найден' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(404).send({ message: 'Некорректный ID' });
+        return res.status(400).send({ message: 'Некорректный ID' });
       }
       return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
