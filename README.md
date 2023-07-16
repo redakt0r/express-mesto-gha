@@ -1,7 +1,8 @@
 [![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
 # Проект Mesto фронтенд + бэкенд
+Бэкенд проекта Mesto.
 
-
+В реализации использовались Node.js, Mongodb, express, mongoose. 
 ## Директории
 
 `/routes` — папка с файлами роутера  
@@ -15,4 +16,4 @@
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
 
-Ссылка на [github](https://github.com/redakt0r/express-mesto-gha)
+Ссылка на [github репозиторий](https://github.com/redakt0r/express-mesto-gha)
