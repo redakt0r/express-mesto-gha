@@ -1,10 +1,15 @@
 const Card = require('../models/card');
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  SOME_ERROR,
+} = require('../utils/constants');
 
 module.exports.getCards = (_req, res) => {
   Card.find({})
     .populate('likes')
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.postCard = (req, res) => {
@@ -14,10 +19,10 @@ module.exports.postCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        res.status(BAD_REQUEST).send({ message: err.message });
         return;
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' });
     });
 };
 
@@ -30,12 +35,12 @@ module.exports.deleteCardById = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(400).send({ message: 'Некорректный ID' });
+        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID' });
       }
-      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
+      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
 
@@ -53,12 +58,12 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(400).send({ message: 'Некорректный ID' });
+        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID' });
       }
-      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
+      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
 
@@ -76,11 +81,11 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(400).send({ message: 'Некорректный ID' });
+        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID' });
       }
-      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
+      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };

@@ -1,9 +1,14 @@
 const User = require('../models/user');
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  SOME_ERROR,
+} = require('../utils/constants');
 
 module.exports.getUsers = (_req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
 };
 
 module.exports.postUser = (req, res) => {
@@ -12,10 +17,10 @@ module.exports.postUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        res.status(BAD_REQUEST).send({ message: err.message });
         return;
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' });
     });
 };
 
@@ -28,12 +33,12 @@ module.exports.getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(400).send({ message: 'Некорректный ID' });
+        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID' });
       }
-      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
+      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
 
@@ -44,9 +49,9 @@ module.exports.updateUserInfo = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST).send({ message: err.message });
       }
-      return res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' });
     });
 };
 
@@ -55,5 +60,5 @@ module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
 };
