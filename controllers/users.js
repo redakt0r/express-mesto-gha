@@ -20,19 +20,20 @@ module.exports.postUser = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  // const { userId } = req.params;
-  // console.log(userId);
-  User.findById(req.params.userId)
+  const { userId } = req.params;
+  User.findById(userId)
     .orFail(new Error('NotValidId'))
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Пользователь не найден' });
-        return;
+        return res.status(404).send({ message: 'Пользователь не найден' });
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      if (err.kind === 'ObjectId') {
+        return res.status(404).send({ message: 'Некорректный ID' });
+      }
+      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
 
@@ -43,10 +44,9 @@ module.exports.updateUserInfo = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        return res.status(400).send({ message: err.message });
       }
-      res.status(500).send({ message: err.message });
+      return res.status(500).send({ message: 'Произошла неопознанная ошибка' });
     });
 };
 

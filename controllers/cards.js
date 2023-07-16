@@ -22,15 +22,21 @@ module.exports.postCard = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  // const { cardId } = req.params.cardId;
-  Card.findByIdAndDelete(req.params.cardId)
+  const { cardId } = req.params.cardId;
+  Card.findByIdAndDelete(cardId)
+    .orFail(new Error('NotValidId'))
     .then((card) => {
-      if (!card) {
+      res.send({ data: card });
+    })
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
         return res.status(404).send({ message: 'Карточка не найдена' });
       }
-      return res.send({ data: card });
-    })
-    .catch(() => res.status(500).send({ message: 'Произошла неопознанная ошибка' }));
+      if (err.kind === 'ObjectId') {
+        return res.status(404).send({ message: 'Некорректный ID' });
+      }
+      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
+    });
 };
 
 module.exports.likeCard = (req, res) => {
@@ -47,10 +53,12 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Карточка не найдена' });
-        return;
+        return res.status(404).send({ message: 'Карточка не найдена' });
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      if (err.kind === 'ObjectId') {
+        return res.status(404).send({ message: 'Некорректный ID' });
+      }
+      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
 
@@ -68,9 +76,11 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Карточка не найдена' });
-        return;
+        return res.status(404).send({ message: 'Карточка не найдена' });
       }
-      res.status(500).send({ message: 'Произошла неопознанная ошибка' });
+      if (err.kind === 'ObjectId') {
+        return res.status(404).send({ message: 'Некорректный ID' });
+      }
+      return res.status(500).send({ message: 'Произошла неопознанная ошибка', err });
     });
 };
