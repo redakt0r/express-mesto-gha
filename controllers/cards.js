@@ -3,6 +3,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   SOME_ERROR,
+  STATUS_OK,
 } = require('../utils/constants');
 
 module.exports.getCards = (_req, res) => {
@@ -16,7 +17,7 @@ module.exports.postCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: err.message });
