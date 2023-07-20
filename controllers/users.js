@@ -54,7 +54,7 @@ module.exports.getUserById = (req, res) => {
         return res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
       if (err.kind === 'ObjectId') {
-        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID' });
+        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID a?' });
       }
       return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
     });
@@ -85,9 +85,6 @@ module.exports.login = (req, res) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        res.status(401).send({ message: 'нет пользователя' });
-      }
       const token = generateToken({ _id: user._id });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
@@ -99,7 +96,7 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.getCurrentUserInfo = (req, res) => {
-  const { _id } = req;
+  const { _id } = req.user;
   User.findById(_id)
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));

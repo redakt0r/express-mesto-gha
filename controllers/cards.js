@@ -29,10 +29,14 @@ module.exports.postCard = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .orFail(new Error('NotValidId'))
     .then((card) => {
-      res.send({ data: card });
+      if (card.owner.toString() !== req.user._id) { throw new Error('Чужую карточку нельзя удалить'); }
+      Card.findByIdAndDelete(cardId)
+        .then((data) => {
+          res.send({ data });
+        });
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {

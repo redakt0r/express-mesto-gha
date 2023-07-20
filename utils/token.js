@@ -1,6 +1,6 @@
 const JWT = require('jsonwebtoken');
 
-const SECRET_KEY = 'most-secret-key';
+const { SECRET_KEY } = require('./constants');
 
 /*module.exports.generateToken = (payload) => JWT.sign(payload, SECRET_KEY, { expiresIn: '7d' });
 
