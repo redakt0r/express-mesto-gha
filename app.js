@@ -6,13 +6,15 @@ const helmet = require('helmet');
 
 const cookieParser = require('cookie-parser');
 
-const { errors } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 
 const auth = require('./middlewares/auth');
 
 const { login, createUser } = require('./controllers/users');
 
-const { PORT, DB_URL } = require('./utils/constants');
+const {
+  PORT, DB_URL, URL_REG_EXP, EMAIL_REG_EXP,
+} = require('./utils/constants');
 
 const NotFoundError = require('./errors/NotFoundError');
 
@@ -26,8 +28,21 @@ app.use(helmet());
 
 app.use(cookieParser());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(URL_REG_EXP).message('Некорректная ссылка'),
+    email: Joi.string().required().regex(EMAIL_REG_EXP).message('Некорректный email'),
+  }),
+}), createUser);
 
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));

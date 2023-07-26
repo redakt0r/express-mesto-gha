@@ -21,7 +21,7 @@ router.patch('/me', celebrate({
 }), updateUserInfo);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().regex(URL_REG_EXP).message('Некорректная ссылка.'),
+    avatar: Joi.string().required().regex(URL_REG_EXP).message('Некорректная ссылка'),
   }),
 }), updateUserAvatar);
 
