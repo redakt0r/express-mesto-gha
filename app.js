@@ -30,7 +30,7 @@ app.use(cookieParser());
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().regex(EMAIL_REG_EXP).message('Некорректный email'),
     password: Joi.string().required(),
   }),
 }), login);
@@ -41,6 +41,7 @@ app.post('/signup', celebrate({
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().regex(URL_REG_EXP).message('Некорректная ссылка'),
     email: Joi.string().required().regex(EMAIL_REG_EXP).message('Некорректный email'),
+    password: Joi.string().required(),
   }),
 }), createUser);
 
