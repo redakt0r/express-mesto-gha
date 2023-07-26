@@ -28,7 +28,9 @@ module.exports.createUser = (req, res, next) => {
           name, about, avatar, email, password: hash,
         },
       )
-        .then((user) => res.status(STATUS_OK).send({ name, email, _id: user._id }))
+        .then(() => res.status(STATUS_OK).send({
+          email, name, about, avatar,
+        }))
         .catch((err) => {
           if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
           if (err.code === 11000) { throw new ConflictError('Пользователь с таким Email уже существует'); }
@@ -42,10 +44,12 @@ module.exports.getUserById = (req, res, next) => {
   User.findById(userId)
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => {
-      res.send({ data: user });
+      if (!user) { throw new NotFoundError('Пользователь не найден'); }
+      return res.send({ data: user });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') { throw new BadRequestError(err.message); }
+      next(err);
     })
     .catch(next);
 };
@@ -81,7 +85,7 @@ module.exports.login = (req, res, next) => {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
       });
-      return res.status(STATUS_OK).send({ _id: user._id });
+      return res.send({ _id: user._id });
     })
     .catch(next);
 };
