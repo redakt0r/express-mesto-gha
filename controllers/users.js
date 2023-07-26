@@ -1,22 +1,23 @@
 const bcrypt = require('bcryptjs');
-// const cookieParser = require('cookie-parser');
+
 const { generateToken } = require('../utils/token');
 const User = require('../models/user');
 
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  SOME_ERROR,
-  STATUS_OK,
-} = require('../utils/constants');
+const BadRequestError = require('../errors/BadRequestError');
 
-module.exports.getUsers = (_req, res) => {
+const NotFoundError = require('../errors/NotFoundError');
+
+const ConflictError = require('../errors/ConflictError');
+
+const { STATUS_OK } = require('../utils/constants');
+
+module.exports.getUsers = (_req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email,
   } = req.body;
@@ -29,59 +30,49 @@ module.exports.createUser = (req, res) => {
       )
         .then((user) => res.status(STATUS_OK).send({ data: user }))
         .catch((err) => {
-          if (err.name === 'ValidationError') {
-            res.status(BAD_REQUEST).send({ message: err.message });
-            return;
-          }
-          if (err.code === 11000) {
-            res.status(409).send({ message: 'Пользователь с таким Email уже существует' });
-            return;
-          }
-          res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' });
-        });
+          if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
+          if (err.code === 11000) { throw new ConflictError('Пользователь с таким Email уже существует'); }
+        })
+        .catch(next);
     });
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(new Error('NotValidId'))
+    .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.message === 'NotValidId') {
-        return res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
-      }
-      if (err.kind === 'ObjectId') {
-        return res.status(BAD_REQUEST).send({ message: 'Некорректный ID a?' });
-      }
-      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка', err });
-    });
+      if (err.kind === 'ObjectId') { throw new BadRequestError(err.message); }
+    })
+    .catch(next);
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: err.message });
-      }
-      return res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' });
-    });
+      if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
+    })
+    .catch(next);
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
+    })
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -90,14 +81,14 @@ module.exports.login = (req, res) => {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
       });
-      return res.status(200).send({ _id: user._id });
+      return res.status(STATUS_OK).send({ _id: user._id });
     })
-    .catch((err) => res.status(SOME_ERROR).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.getCurrentUserInfo = (req, res) => {
+module.exports.getCurrentUserInfo = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(SOME_ERROR).send({ message: 'Произошла неопознанная ошибка' }));
+    .catch(next);
 };

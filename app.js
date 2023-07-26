@@ -30,7 +30,7 @@ app.post('/signup', createUser);
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
 
-app.use(() => { throw new NotFoundError('Страница не найдена'); });
+app.use('*', () => { throw new NotFoundError('Страница не найдена'); });
 
 app.use((err, _req, res, next) => {
   const { statusCode = 500, message } = err;
