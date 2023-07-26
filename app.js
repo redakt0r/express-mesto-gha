@@ -10,7 +10,9 @@ const auth = require('./middlewares/auth');
 
 const { login, createUser } = require('./controllers/users');
 
-const { NOT_FOUND, PORT, DB_URL } = require('./utils/constants');
+const { PORT, DB_URL } = require('./utils/constants');
+
+const NotFoundError = require('./errors/NotFoundError');
 
 const app = express();
 
@@ -28,10 +30,17 @@ app.post('/signup', createUser);
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
 
-app.use('*', (_req, res) => res.status(NOT_FOUND).send({ message: 'Страница не найдена' }));
+app.use(() => { throw new NotFoundError('Страница не найдена'); });
 
-app.use((err, req, res, next) => {
-  res.status(500).send({ message: 'На сервере произошла ошибка' });
+app.use((err, _req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
   next();
 });
 
