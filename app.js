@@ -6,6 +6,8 @@ const helmet = require('helmet');
 
 const cookieParser = require('cookie-parser');
 
+const { errors } = require('celebrate');
+
 const auth = require('./middlewares/auth');
 
 const { login, createUser } = require('./controllers/users');
@@ -30,6 +32,8 @@ app.post('/signup', createUser);
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
 
+app.use(errors());
+
 app.use('*', () => { throw new NotFoundError('Страница не найдена'); });
 
 app.use((err, _req, res, next) => {
@@ -45,5 +49,6 @@ app.use((err, _req, res, next) => {
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`App слушает ${PORT}`);
 });
