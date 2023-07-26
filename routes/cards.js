@@ -19,8 +19,20 @@ router.post('/', celebrate({
     link: Joi.string().required().regex(URL_REG_EXP).message('Некорректная ссылка'),
   }),
 }), postCard);
-router.delete('/:cardId', deleteCardById);
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).required().hex(),
+  }),
+}), deleteCardById);
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).required().hex(),
+  }),
+}), likeCard);
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).required().hex(),
+  }),
+}), dislikeCard);
 
 module.exports = router;
