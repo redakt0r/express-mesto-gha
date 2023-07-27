@@ -34,6 +34,7 @@ module.exports.createUser = (req, res, next) => {
         .catch((err) => {
           if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
           if (err.code === 11000) { throw new ConflictError('Пользователь с таким Email уже существует'); }
+          next(err);
         })
         .catch(next);
     });
@@ -61,6 +62,7 @@ module.exports.updateUserInfo = (req, res, next) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
+      next(err);
     })
     .catch(next);
 };
@@ -72,6 +74,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
+      next(err);
     })
     .catch(next);
 };

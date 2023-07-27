@@ -1,6 +1,5 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
-const { URL_REG_EXP } = require('../utils/constants');
+const { getUserByIdRequestValidation, updateUserInfoRequestValidation, updateAvatarRequestValidation } = require('../middlewares/request-validation');
 
 const {
   getUsers,
@@ -11,22 +10,9 @@ const {
 } = require('../controllers/users');
 
 router.get('/me', getCurrentUserInfo);
-router.get('/:userId', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().length(24).required().hex(),
-  }),
-}), getUserById);
+router.get('/:userId', getUserByIdRequestValidation, getUserById);
 router.get('/', getUsers);
-router.patch('/me', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-  }),
-}), updateUserInfo);
-router.patch('/me/avatar', celebrate({
-  body: Joi.object().keys({
-    avatar: Joi.string().required().regex(URL_REG_EXP).message('Некорректная ссылка'),
-  }),
-}), updateUserAvatar);
+router.patch('/me', updateUserInfoRequestValidation, updateUserInfo);
+router.patch('/me/avatar', updateAvatarRequestValidation, updateUserAvatar);
 
 module.exports = router;
