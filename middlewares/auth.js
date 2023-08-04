@@ -4,7 +4,7 @@ const { SECRET_KEY } = require('../utils/constants');
 
 const AuthorizationError = require('../errors/AuthorizationError');
 
-module.exports = (req, _res, next) => {
+module.exports.auth = (req, _res, next) => {
   if (!req.cookies.jwt) { throw new AuthorizationError('Необходима авторизация'); }
   const token = req.cookies.jwt;
   let payload;

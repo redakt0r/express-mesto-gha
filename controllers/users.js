@@ -13,7 +13,7 @@ const { STATUS_OK } = require('../utils/constants');
 
 module.exports.getUsers = (_req, res, next) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
@@ -46,7 +46,7 @@ module.exports.getUserById = (req, res, next) => {
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => {
       if (!user) { throw new NotFoundError('Пользователь не найден'); }
-      return res.send({ data: user });
+      return res.send(user);
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') { throw new BadRequestError(err.message); }
@@ -59,7 +59,7 @@ module.exports.updateUserInfo = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
-    .then((users) => res.send({ data: users }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
       next(err);
@@ -71,7 +71,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
-    .then((users) => res.send({ data: users }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
       next(err);
@@ -87,8 +87,17 @@ module.exports.login = (req, res, next) => {
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
+        sameSite: true,
       });
-      return res.send({ _id: user._id });
+      return res.send({
+        user: {
+          _id: user._id,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+        },
+      });
     })
     .catch(next);
 };
@@ -98,4 +107,10 @@ module.exports.getCurrentUserInfo = (req, res, next) => {
   User.findById(_id)
     .then((user) => res.send({ data: user }))
     .catch(next);
+};
+
+module.exports.signOut = (_req, res, next) => {
+  if (res.cookie) {
+    res.clearCookie('jwt').send({ message: 'Вы вышли из приложения' }).catch(next);
+  }
 };

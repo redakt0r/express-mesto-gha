@@ -10,7 +10,8 @@ const NotFoundError = require('../errors/NotFoundError');
 module.exports.getCards = (_req, res, next) => {
   Card.find({})
     .populate('likes')
-    .then((cards) => res.send({ data: cards }))
+    .populate('owner')
+    .then((cards) => res.send(cards))
     .catch(next);
 };
 
@@ -18,7 +19,8 @@ module.exports.postCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.status(STATUS_OK).send({ data: card }))
+    .then((card) => card.populate('owner'))
+    .then((card) => res.status(STATUS_OK).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new BadRequestError(err.message); }
       next(err);
@@ -53,8 +55,9 @@ module.exports.likeCard = (req, res, next) => {
   )
     .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .populate('likes')
+    .populate('owner')
     .then((card) => {
-      res.send({ data: card });
+      res.send(card);
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') { throw new BadRequestError('Некорректный ID'); }
@@ -72,8 +75,9 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .populate('likes')
+    .populate('owner')
     .then((card) => {
-      res.send({ data: card });
+      res.send(card);
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') { throw new BadRequestError('Некорректный ID'); }
